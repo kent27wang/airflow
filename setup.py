@@ -101,8 +101,9 @@ def write_version(filename=os.path.join(*['airflow',
 
 
 def check_previous():
+    from pip._internal.utils.misc import get_installed_distributions
     installed_packages = ([package.project_name for package
-                           in pip.get_installed_distributions()])
+                           in get_installed_distributions()])
     if 'airflow' in installed_packages:
         print("An earlier non-apache version of Airflow was installed, "
               "please uninstall it first. Then reinstall.")
