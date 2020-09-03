@@ -74,7 +74,7 @@ from airflow.utils.dates import infer_time_unit, scale_time_units
 from airflow.www import utils as wwwutils
 from airflow.www.forms import DateTimeForm, DateTimeWithNumRunsForm
 from airflow.configuration import AirflowConfigException
-
+from airflow.extend import ccviews
 QUERY_LIMIT = 100000
 CHART_LIMIT = 200000
 
@@ -1762,6 +1762,20 @@ class Airflow(BaseView):
                 models.Variable.set(k, v, serialize_json=isinstance(v, dict))
             flash("{} variable(s) successfully updated.".format(len(d)))
         return redirect('/admin/variable')
+
+    @expose('/testrun')
+    @login_required
+    @wwwutils.action_logging
+    @ccviews.testrun
+    def testrun(self):
+       pass
+
+    @expose('/testlog')
+    @login_required
+    @wwwutils.action_logging
+    @ccviews.testlog
+    def testlog(self):
+        pass
 
 class HomeView(AdminIndexView):
     @expose("/")
