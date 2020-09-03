@@ -18,6 +18,8 @@ from __future__ import unicode_literals
 
 from future.standard_library import install_aliases
 
+from airflow.extend import fictitious_run
+
 install_aliases()
 from builtins import str
 from builtins import object, bytes
@@ -1221,6 +1223,7 @@ class TaskInstance(Base):
         return dr
 
     @provide_session
+    @fictitious_run
     def run(
             self,
             verbose=True,
