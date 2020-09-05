@@ -1465,6 +1465,9 @@ class CLIFactory(object):
             ('--conn_extra',),
             help='Connection `Extra` field, optional when adding a connection',
             type=str),
+        'manaual_create_table': Arg(
+            ("-MCT", "--manaual_create_table"), "manaual create table",
+            "store_true")
     }
     subparsers = (
         {
@@ -1523,6 +1526,11 @@ class CLIFactory(object):
                 'mark_success', 'force', 'pool', 'cfg_path',
                 'local', 'raw', 'ignore_all_dependencies', 'ignore_dependencies',
                 'ignore_depends_on_past', 'ship_dag', 'pickle', 'job_id'),
+        },{
+            'func': airflow.extend.cccli.testrun,
+            'help': "Test run a single task instance",
+            'args': (
+                'dag_id', 'task_id', 'execution_date', 'manaual_create_table', 'subdir'),
         }, {
             'func': initdb,
             'help': "Initialize the metadata database",
