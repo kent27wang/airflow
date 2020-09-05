@@ -132,35 +132,45 @@
           <button id="btn_rendered" type="button" class="btn btn-primary">
             Rendered
           </button>
-          <button id="btn_ti" type="button" class="btn btn-primary">
-            Task Instances
-          </button>
           <button id="btn_log" type="button" class="btn btn-primary">
             View Log
           </button>
+          <button id="btn_test_run_log" type="button" class="btn btn-primary">
+            View Test Log
+          </button>
           <hr/>
-          <button id="btn_run" type="button" class="btn btn-primary"
-            title="Runs a single task instance">
-            Run
+          <button id="btn_test_run" type="button" class="btn btn-primary"
+            title="运行spark-sql任务，并将数据写入临时表中"
+            >Test Run
           </button>
           <span class="btn-group">
-            <button id="btn_ignore_all_deps"
-              type="button" class="btn" data-toggle="button"
-              title="Ignores all non-critical dependencies, including task state and task_deps"
-              >Ignore All Deps</button>
-          </span>
-          <span class="btn-group">
-            <button id="btn_ignore_ti_state"
-              type="button" class="btn" data-toggle="button"
-              title="Ignore previous success/failure"
-              >Ignore Task State</button>
-          </span>
-          <button id="btn_ignore_task_deps"
-            type="button" class="btn" data-toggle="button"
-            title="Disregard the task-specific dependencies, e.g. status of upstream task instances and depends_on_past"
-            >Ignore Task Deps</button>
+            <button id="btn_manaual_create_table" type="button" class="btn" data-toggle="button"
+              title="是否手动创建临时表，临时表请勿创建external table。"
+              >Manual Create Table</button>
           </span>
           <hr/>
+<!--          <button id="btn_run" type="button" class="btn btn-primary"-->
+<!--            title="Runs a single task instance">-->
+<!--            Run-->
+<!--          </button>-->
+<!--          <span class="btn-group">-->
+<!--            <button id="btn_ignore_all_deps"-->
+<!--              type="button" class="btn" data-toggle="button"-->
+<!--              title="Ignores all non-critical dependencies, including task state and task_deps"-->
+<!--              >Ignore All Deps</button>-->
+<!--          </span>-->
+<!--          <span class="btn-group">-->
+<!--            <button id="btn_ignore_ti_state"-->
+<!--              type="button" class="btn" data-toggle="button"-->
+<!--              title="Ignore previous success/failure"-->
+<!--              >Ignore Task State</button>-->
+<!--          </span>-->
+<!--          <button id="btn_ignore_task_deps"-->
+<!--            type="button" class="btn" data-toggle="button"-->
+<!--            title="Disregard the task-specific dependencies, e.g. status of upstream task instances and depends_on_past"-->
+<!--            >Ignore Task Deps</button>-->
+<!--          </span>-->
+<!--          <hr/>-->
           <button id="btn_clear" type="button" class="btn btn-primary"
               title="Clearing deletes the previous state of the task instance, allowing it to get re-triggered by the scheduler or a backfill command"
               >Clear
@@ -286,6 +296,14 @@ function updateQueryStringParameter(uri, key, value) {
       window.location = url;
     });
 
+     $("#btn_test_run_log").click(function(){
+      url = "{{ url_for('airflow.testlog') }}" +
+        "?task_id=" + task_id +
+        "&dag_id=" + dag_id +
+        "&execution_date=" + execution_date;
+      window.location = url;
+    });
+
     $("#btn_task").click(function(){
       url = "{{ url_for('airflow.task') }}" +
         "?task_id=" + task_id +
@@ -302,17 +320,27 @@ function updateQueryStringParameter(uri, key, value) {
       window.location = url;
     });
 
-    $("#btn_run").click(function(){
-      url = "{{ url_for('airflow.run') }}" +
+     $("#btn_test_run").click(function(){
+      url = "{{ url_for('airflow.testrun') }}" +
         "?task_id=" + encodeURIComponent(task_id) +
         "&dag_id=" + encodeURIComponent(dag_id) +
-        "&ignore_all_deps=" + $('#btn_ignore_all_deps').hasClass('active') +
-        "&ignore_task_deps=" + $('#btn_ignore_task_deps').hasClass('active') +
-        "&ignore_ti_state=" + $('#btn_ignore_ti_state').hasClass('active') +
         "&execution_date=" + execution_date +
+        "&manaual_create_table=" + $('#btn_manaual_create_table').hasClass('active') +
         "&origin=" + encodeURIComponent(window.location);
       window.location = url;
     });
+
+    // $("#btn_run").click(function(){
+    //   url = "{{ url_for('airflow.run') }}" +
+    //     "?task_id=" + encodeURIComponent(task_id) +
+    //     "&dag_id=" + encodeURIComponent(dag_id) +
+    //     "&ignore_all_deps=" + $('#btn_ignore_all_deps').hasClass('active') +
+    //     "&ignore_task_deps=" + $('#btn_ignore_task_deps').hasClass('active') +
+    //     "&ignore_ti_state=" + $('#btn_ignore_ti_state').hasClass('active') +
+    //     "&execution_date=" + execution_date +
+    //     "&origin=" + encodeURIComponent(window.location);
+    //   window.location = url;
+    // });
 
     $("#btn_clear").click(function(){
       url = "{{ url_for('airflow.clear') }}" +
