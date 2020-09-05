@@ -65,18 +65,18 @@ def taskinstance_run(
     if not ignore_all_deps and not ignore_ti_state and tiself.state == State.SUCCESS:
         Stats.incr('previously_succeeded', 1, 1)
 
-    queue_dep_context = DepContext(
-        deps=QUEUE_DEPS,
-        ignore_all_deps=ignore_all_deps,
-        ignore_ti_state=ignore_ti_state,
-        ignore_depends_on_past=ignore_depends_on_past,
-        ignore_task_deps=ignore_task_deps)
-    if not tiself.are_dependencies_met(
-            dep_context=queue_dep_context,
-            session=session,
-            verbose=True):
-        session.commit()
-        return
+    # queue_dep_context = DepContext(
+    #     deps=QUEUE_DEPS,
+    #     ignore_all_deps=ignore_all_deps,
+    #     ignore_ti_state=ignore_ti_state,
+    #     ignore_depends_on_past=ignore_depends_on_past,
+    #     ignore_task_deps=ignore_task_deps)
+    # if not tiself.are_dependencies_met(
+    #         dep_context=queue_dep_context,
+    #         session=session,
+    #         verbose=True):
+    #     session.commit()
+    #     return
 
     hr = "\n" + ("-" * 80) + "\n"  # Line break
 
@@ -88,34 +88,34 @@ def taskinstance_run(
         total=task.retries + 1)
     tiself.start_date = datetime.now()
 
-    dep_context = DepContext(
-        deps=RUN_DEPS - QUEUE_DEPS,
-        ignore_all_deps=ignore_all_deps,
-        ignore_depends_on_past=ignore_depends_on_past,
-        ignore_task_deps=ignore_task_deps,
-        ignore_ti_state=ignore_ti_state)
-    runnable = tiself.are_dependencies_met(
-        dep_context=dep_context,
-        session=session,
-        verbose=True)
+    # dep_context = DepContext(
+    #     deps=RUN_DEPS - QUEUE_DEPS,
+    #     ignore_all_deps=ignore_all_deps,
+    #     ignore_depends_on_past=ignore_depends_on_past,
+    #     ignore_task_deps=ignore_task_deps,
+    #     ignore_ti_state=ignore_ti_state)
+    # runnable = tiself.are_dependencies_met(
+    #     dep_context=dep_context,
+    #     session=session,
+    #     verbose=True)
 
-    if not runnable and not mark_success:
-        # FIXME: we might have hit concurrency limits, which means we probably
-        # have been running prematurely. This should be handled in the
-        # scheduling mechanism.
-        tiself.state = State.NONE
-        msg = ("FIXME: Rescheduling due to concurrency limits reached at task "
-               "runtime. Attempt {attempt} of {total}. State set to NONE.").format(
-            attempt=tiself.try_number % (task.retries + 1) + 1,
-            total=task.retries + 1)
-        logging.warning(hr + msg + hr)
-
-        tiself.queued_dttm = datetime.now()
-        msg = "Queuing into pool {}".format(tiself.pool)
-        logging.info(msg)
-        session.merge(tiself)
-        session.commit()
-        return
+    # if not runnable and not mark_success:
+    #     # FIXME: we might have hit concurrency limits, which means we probably
+    #     # have been running prematurely. This should be handled in the
+    #     # scheduling mechanism.
+    #     tiself.state = State.NONE
+    #     msg = ("FIXME: Rescheduling due to concurrency limits reached at task "
+    #            "runtime. Attempt {attempt} of {total}. State set to NONE.").format(
+    #         attempt=tiself.try_number % (task.retries + 1) + 1,
+    #         total=task.retries + 1)
+    #     logging.warning(hr + msg + hr)
+    #
+    #     tiself.queued_dttm = datetime.now()
+    #     msg = "Queuing into pool {}".format(tiself.pool)
+    #     logging.info(msg)
+    #     session.merge(tiself)
+    #     session.commit()
+    #     return
 
     # Another worker might have started running this task instance while
     # the current worker process was blocked on refresh_from_db
