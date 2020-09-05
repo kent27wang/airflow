@@ -13,22 +13,32 @@ from __future__ import unicode_literals
 
 from future.standard_library import install_aliases
 
+from airflow.bin.cli import get_dag
+from airflow.operators.bash_operator import BashOperator
+from airflow.utils.db import provide_session
+
 install_aliases()
 import copy
 from datetime import datetime
-import os
-import signal
 import socket
 
-from airflow import settings
-from airflow.exceptions import AirflowException, AirflowSkipException
-from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, RUN_DEPS
+from airflow.exceptions import AirflowSkipException
+from airflow.ti_deps.dep_context import QUEUE_DEPS, RUN_DEPS
 from airflow.utils.state import State
 
+from airflow.models import Log, Stats
+
+
 import logging
-
-from airflow.models import  Log, Stats
-
+import os
+import signal
+from airflow import settings
+from airflow import configuration as conf
+from airflow.exceptions import AirflowException
+from airflow.models import (TaskInstance)
+from airflow.ti_deps.dep_context import (DepContext)
+from airflow.utils import db as db_utils
+from airflow.utils.file import mkdirs
 
 
 def taskinstance_run(
@@ -209,3 +219,93 @@ def taskinstance_run(
     logging.info('Skip success callback.')
 
     session.commit()
+
+def test_execute(task, context):
+    from airflow.ccutils import operator
+    if isinstance(task, BashOperator):
+        operator.bash_operator_test_execute(task, context)
+    else:
+        raise AirflowException(u"暂不支持非BashOperator任务测试运行")
+
+@provide_session
+def taskinstance_testrun(tiself, args, session=None):
+    task = tiself.task
+    tiself.refresh_from_db(session=session, lock_for_update=True)
+    tiself.hostname = socket.getfqdn()
+    tiself.operator = task.__class__.__name__
+    logging.info("Test run %s, %s, %s" % (task.dag_id, task.task_id, tiself.execution_date))
+    tiself.start_date = datetime.now()
+    if tiself.state == State.RUNNING:
+        msg = "Task Instance already running {}".format(tiself)
+        logging.warn(msg)
+        session.commit()
+        return
+
+    tiself.try_number += 1
+    msg = "Starting attempt {attempt}".format(attempt=tiself.try_number % (task.retries + 1) + 1)
+    logging.info(msg)
+    session.add(Log(State.RUNNING, tiself))
+    tiself.state = State.RUNNING
+    tiself.pid = os.getpid()
+    tiself.end_date = None
+    session.merge(tiself)
+    session.commit()
+    settings.engine.dispose()
+    context = {}
+    try:
+        context = tiself.get_template_context()
+        task_copy = copy.copy(task)
+        tiself.task = task_copy
+        def signal_handler(signum, frame):
+            logging.error("Killing subprocess")
+            task_copy.on_kill()
+            raise AirflowException("Task received SIGTERM signal")
+        signal.signal(signal.SIGTERM, signal_handler)
+        tiself.render_templates()
+        fill_context(context, args)
+        test_execute(task, context)
+        tiself.state = State.SUCCESS
+    except AirflowSkipException:
+        tiself.state = State.SKIPPED
+    except (Exception, KeyboardInterrupt) as e:
+        tiself.handle_failure(e, False, context)
+
+    tiself.end_date = datetime.now()
+    tiself.set_duration()
+    session.add(Log(tiself.state, tiself))
+    session.merge(tiself)
+    session.commit()
+
+def fill_context(context, args):
+    for k,v in args.__dict__.items():
+        if k not in context:
+            context[k] = v
+
+def cli_testrun(args, dag=None):
+    settings.configure_orm(disable_connection_pool=True)
+    db_utils.pessimistic_connection_handling()
+    if dag:
+        args.dag_id = dag.dag_id
+    logging.root.handlers = []
+    log_base = os.path.expanduser(conf.get('core', 'BASE_LOG_FOLDER'))
+    directory = log_base + "/test/{args.dag_id}/{args.task_id}".format(args=args)
+    if not os.path.exists(directory):
+        mkdirs(directory, 0o775)
+    iso = args.execution_date.isoformat()
+    filename = "{directory}/{iso}".format(**locals())
+    if not os.path.exists(filename):
+        open(filename, "a").close()
+        os.chmod(filename, 0o666)
+    try:
+        logging.basicConfig(
+            filename=filename,
+            level=settings.LOGGING_LEVEL,
+            format=settings.LOG_FORMAT)
+        dag = get_dag(args)
+        task = dag.get_task(task_id=args.task_id)
+        ti = TaskInstance(task, args.execution_date)
+        ti.refresh_from_db()
+        taskinstance_testrun(ti, args)
+    except Exception:
+        import traceback
+        logging.error(traceback.format_exc())

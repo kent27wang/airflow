@@ -36,3 +36,71 @@ def fictitious_run(func):
         return result
 
     return wrapper
+
+class ccmodels:
+    pass
+
+class ccviews:
+    @staticmethod
+    def testrun(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            from airflow.www.ccviews import testrun
+            params = {}
+            co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
+            vs_default = func.func_defaults or []
+            for i in range(len(vs_default)):
+                params[co_varnames[-i - 1]] = vs_default[-i - 1]
+            for i in range(len(args)):
+                params[co_varnames[i]] = args[i]
+            for k, v in kwargs.items():
+                params[k] = v
+            logging.info('parameters: %s' % params)
+            result = testrun(params['self'])
+            return result
+        return wrapper
+
+    @staticmethod
+    def testlog(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            from airflow.www.ccviews import testlog
+            params = {}
+            co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
+            vs_default = func.func_defaults or []
+            for i in range(len(vs_default)):
+                params[co_varnames[-i - 1]] = vs_default[-i - 1]
+            for i in range(len(args)):
+                params[co_varnames[i]] = args[i]
+            for k, v in kwargs.items():
+                params[k] = v
+            logging.info('parameters: %s' % params)
+            result = testlog(params['self'])
+            return result
+        return wrapper
+
+    @staticmethod
+    def testcode(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            from airflow.www.ccviews import testlog
+            params = {}
+            co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
+            vs_default = func.func_defaults or []
+            for i in range(len(vs_default)):
+                params[co_varnames[-i - 1]] = vs_default[-i - 1]
+            for i in range(len(args)):
+                params[co_varnames[i]] = args[i]
+            for k, v in kwargs.items():
+                params[k] = v
+            logging.info('parameters: %s' % params)
+            result = testlog(params['self'])
+            return result
+        return wrapper
+
+
+class cccli:
+    @staticmethod
+    def testrun(args, dag=None):
+        from airflow.ccmodels import cli_testrun
+        cli_testrun(args, dag)
