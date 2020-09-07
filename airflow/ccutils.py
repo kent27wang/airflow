@@ -61,8 +61,8 @@ class SqlParser:
                 self.wrter_tables.append(t)
                 self._wrter_tables.add(t.table_name)
             return all.replace(matched.group('table'), tmp_tbl)
-
-        if not sql: sql = self._sql.replace('`', '')
+        if not sql.strip(): sql = self._sql
+        sql = sql.replace('`', '')
         p1 = '\sCREATE\s+TABLE\s+(?P<table>\w+\.\w+)'
         p2 = '\sINSERT\s.*?(?P<table>\w+\.\w+)'
         created_tables = re.findall(p1, sql, re.IGNORECASE)
