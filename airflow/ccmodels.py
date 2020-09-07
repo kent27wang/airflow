@@ -263,7 +263,7 @@ def taskinstance_testrun(tiself, args, session=None):
         signal.signal(signal.SIGTERM, signal_handler)
         tiself.render_templates()
         fill_context(context, args)
-        test_execute(task, context)
+        test_execute(tiself.task, context)
         tiself.state = State.SUCCESS
     except AirflowSkipException:
         tiself.state = State.SKIPPED
