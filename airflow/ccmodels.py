@@ -268,7 +268,8 @@ def taskinstance_testrun(tiself, args, session=None):
     except AirflowSkipException:
         tiself.state = State.SKIPPED
     except (Exception, KeyboardInterrupt) as e:
-        tiself.handle_failure(e, False, context)
+        tiself.state = State.FAILED
+        # tiself.handle_failure(e, False, context)
 
     tiself.end_date = datetime.now()
     tiself.set_duration()

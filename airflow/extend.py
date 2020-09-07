@@ -37,8 +37,6 @@ def fictitious_run(func):
 
     return wrapper
 
-class ccmodels:
-    pass
 
 class ccviews:
     @staticmethod
