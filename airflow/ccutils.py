@@ -44,7 +44,7 @@ class SqlParser:
             if not row: continue
             i = row.find("--")
             if i != -1: row = row[:i]
-            res.append(row)
+            if row.strip(): res.append(row)
         return "\n".join(res)
 
     def replace_table(self, sql=""):
