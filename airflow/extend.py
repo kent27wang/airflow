@@ -42,29 +42,20 @@ class ccmodels:
 
 class ccviews:
     @staticmethod
-    def testrun(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            from airflow.www.ccviews import testrun
-            params = {}
-            co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
-            vs_default = func.func_defaults or []
-            for i in range(len(vs_default)):
-                params[co_varnames[-i - 1]] = vs_default[-i - 1]
-            for i in range(len(args)):
-                params[co_varnames[i]] = args[i]
-            for k, v in kwargs.items():
-                params[k] = v
-            logging.info('parameters: %s' % params)
-            result = testrun(params['self'])
-            return result
-        return wrapper
+    def get_func(func):
+        from airflow.www.ccviews import testrun, testlog, testcode, taskcode
+        func_dict = { #views与ccview函数映射关系
+            'testrun': testrun,
+            'testlog': testlog,
+            'testcode': testcode,
+            'taskcode': taskcode,
+        }
+        return func_dict[func.__name__]
 
     @staticmethod
-    def testlog(func):
+    def replace_func(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from airflow.www.ccviews import testlog
             params = {}
             co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
             vs_default = func.func_defaults or []
@@ -75,26 +66,7 @@ class ccviews:
             for k, v in kwargs.items():
                 params[k] = v
             logging.info('parameters: %s' % params)
-            result = testlog(params['self'])
-            return result
-        return wrapper
-
-    @staticmethod
-    def testcode(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            from airflow.www.ccviews import testlog
-            params = {}
-            co_varnames = func.__code__.co_varnames[:func.__code__.co_argcount]
-            vs_default = func.func_defaults or []
-            for i in range(len(vs_default)):
-                params[co_varnames[-i - 1]] = vs_default[-i - 1]
-            for i in range(len(args)):
-                params[co_varnames[i]] = args[i]
-            for k, v in kwargs.items():
-                params[k] = v
-            logging.info('parameters: %s' % params)
-            result = testlog(params['self'])
+            result = ccviews.get_func(func)(params['self'])
             return result
         return wrapper
 

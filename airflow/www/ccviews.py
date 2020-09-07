@@ -65,10 +65,9 @@ def testlog(object):
 
     if PY2 and not isinstance(log, unicode):
         log = log.decode('utf-8')
-    title = "Log"
     return object.render(
         'airflow/ti_code.html',
-        code=log, dag=dag, title=title, task_id=task_id,
+        code=log, dag=dag, title="Test Run Log", task_id=task_id,
         execution_date=execution_date, form=form)
 
 
@@ -92,3 +91,34 @@ def testrun(object):
         env=copy.copy(os.environ))
     flash("TaskInstance[{}, {}] should start any moment now.".format(task_id, execution_date))
     return redirect(origin)
+
+
+def testcode(object):
+    from airflow.ccutils import operator
+    dag_id = request.args.get('dag_id')
+    task_id = request.args.get('task_id')
+    execution_date = request.args.get('execution_date')
+    dttm = dateutil.parser.parse(execution_date)
+    form = DateTimeForm(data={'execution_date': dttm})
+    dag = dagbag.get_dag(dag_id)
+    task = dag.get_task(task_id)
+    code = operator.parse_task_code(task, 2)
+    return object.render(
+        'airflow/ti_code.html',
+        code=code, dag=dag, title="Test Code", task_id=task_id,
+        execution_date=execution_date, form=form)
+
+def taskcode(object):
+    from airflow.ccutils import operator
+    dag_id = request.args.get('dag_id')
+    task_id = request.args.get('task_id')
+    execution_date = request.args.get('execution_date')
+    dttm = dateutil.parser.parse(execution_date)
+    form = DateTimeForm(data={'execution_date': dttm})
+    dag = dagbag.get_dag(dag_id)
+    task = dag.get_task(task_id)
+    code = operator.parse_task_code(task, 1)
+    return object.render(
+        'airflow/ti_code.html',
+        code=code, dag=dag, title="Task Code", task_id=task_id,
+        execution_date=execution_date, form=form)

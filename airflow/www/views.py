@@ -1766,15 +1766,26 @@ class Airflow(BaseView):
     @expose('/testrun')
     @login_required
     @wwwutils.action_logging
-    @ccviews.testrun
+    @ccviews.replace_func
     def testrun(self):
        pass
 
     @expose('/testlog')
     @login_required
-    @wwwutils.action_logging
-    @ccviews.testlog
+    @ccviews.replace_func
     def testlog(self):
+        pass
+
+    @expose('/testcode')
+    @login_required
+    @ccviews.replace_func
+    def testcode(self):
+        pass
+
+    @expose('/taskcode')
+    @login_required
+    @ccviews.replace_func
+    def taskcode(self):
         pass
 
 class HomeView(AdminIndexView):

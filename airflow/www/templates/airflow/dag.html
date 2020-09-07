@@ -132,13 +132,25 @@
           <button id="btn_rendered" type="button" class="btn btn-primary">
             Rendered
           </button>
+          <button id="btn_ti" type="button" class="btn btn-primary">
+            Task Instances
+          </button>
           <button id="btn_log" type="button" class="btn btn-primary">
             View Log
           </button>
+          <hr/>
           <button id="btn_test_run_log" type="button" class="btn btn-primary">
             View Test Log
           </button>
+          <button id="btn_task_code" type="button" class="btn btn-primary"
+            title="提交的代码。"
+            >Code
+          </button>
           <hr/>
+          <button id="btn_test_run_code" type="button" class="btn btn-primary"
+            title="Test Run 执行的代码。"
+            >Test Run Code
+          </button>
           <button id="btn_test_run" type="button" class="btn btn-primary"
             title="运行spark-sql任务，并将数据写入临时表中"
             >Test Run
@@ -148,6 +160,8 @@
               title="是否手动创建临时表，临时表请勿创建external table。"
               >Manual Create Table</button>
           </span>
+          <hr/>
+
           <hr/>
 <!--          <button id="btn_run" type="button" class="btn btn-primary"-->
 <!--            title="Runs a single task instance">-->
@@ -322,6 +336,26 @@ function updateQueryStringParameter(uri, key, value) {
 
      $("#btn_test_run").click(function(){
       url = "{{ url_for('airflow.testrun') }}" +
+        "?task_id=" + encodeURIComponent(task_id) +
+        "&dag_id=" + encodeURIComponent(dag_id) +
+        "&execution_date=" + execution_date +
+        "&manaual_create_table=" + $('#btn_manaual_create_table').hasClass('active') +
+        "&origin=" + encodeURIComponent(window.location);
+      window.location = url;
+    });
+
+     $("#btn_test_run_code").click(function(){
+      url = "{{ url_for('airflow.testcode') }}" +
+        "?task_id=" + encodeURIComponent(task_id) +
+        "&dag_id=" + encodeURIComponent(dag_id) +
+        "&execution_date=" + execution_date +
+        "&manaual_create_table=" + $('#btn_manaual_create_table').hasClass('active') +
+        "&origin=" + encodeURIComponent(window.location);
+      window.location = url;
+    });
+
+     $("#btn_task_code").click(function(){
+      url = "{{ url_for('airflow.taskcode') }}" +
         "?task_id=" + encodeURIComponent(task_id) +
         "&dag_id=" + encodeURIComponent(dag_id) +
         "&execution_date=" + execution_date +
