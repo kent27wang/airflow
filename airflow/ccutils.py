@@ -182,3 +182,5 @@ class operator:
             code = sp.build_test_sql(manaual_create_table)
         return code
 
+class state:
+    TEST_RUNNING = "testrunning"

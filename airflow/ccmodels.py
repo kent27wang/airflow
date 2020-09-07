@@ -32,7 +32,7 @@ from airflow.models import Log, Stats
 import logging
 import os
 import signal
-from airflow import settings
+from airflow import settings, ccutils
 from airflow import configuration as conf
 from airflow.exceptions import AirflowException
 from airflow.models import (TaskInstance)
@@ -235,7 +235,7 @@ def taskinstance_testrun(tiself, args, session=None):
     tiself.operator = task.__class__.__name__
     logging.info("Test run %s, %s, %s" % (task.dag_id, task.task_id, tiself.execution_date))
     tiself.start_date = datetime.now()
-    if tiself.state == State.RUNNING:
+    if tiself.state == ccutils.state.TEST_RUNNING:
         msg = "Task Instance already running {}".format(tiself)
         logging.warn(msg)
         session.commit()
@@ -244,8 +244,8 @@ def taskinstance_testrun(tiself, args, session=None):
     tiself.try_number += 1
     msg = "Starting attempt {attempt}".format(attempt=tiself.try_number % (task.retries + 1) + 1)
     logging.info(msg)
-    session.add(Log(State.RUNNING, tiself))
-    tiself.state = State.RUNNING
+    session.add(Log(ccutils.state.TEST_RUNNING, tiself))
+    tiself.state = ccutils.state.TEST_RUNNING
     tiself.pid = os.getpid()
     tiself.end_date = None
     session.merge(tiself)

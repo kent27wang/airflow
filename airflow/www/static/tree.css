@@ -47,6 +47,9 @@ rect.success {
 rect.running {
     fill: lime;
 }
+rect.testrunning {
+    fill: MediumPurple;
+}
 rect.failed {
     fill: red;
 }
