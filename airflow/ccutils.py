@@ -163,7 +163,7 @@ class operator:
             return line
 
     @staticmethod
-    def parse_task_code(task, code_type=1): #1、脚本代码  2、测试执行代码
+    def parse_task_code(task, code_type=1, manaual_create_table=False): #1、脚本代码  2、测试执行代码
         from airflow.operators.bash_operator import BashOperator
         if not isinstance(task, BashOperator):
             return u"只支持查看[BashOperator]的spark-sql任务的code:当前任务类型为[%s]. " % task.__class__.__name__
@@ -179,6 +179,6 @@ class operator:
                 code = f.read()
         elif code_type == 2:
             sp = SqlParser(file_path)
-            code = sp.build_test_sql()
+            code = sp.build_test_sql(manaual_create_table)
         return code
 

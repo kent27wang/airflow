@@ -99,10 +99,11 @@ def testcode(object):
     task_id = request.args.get('task_id')
     execution_date = request.args.get('execution_date')
     dttm = dateutil.parser.parse(execution_date)
+    manaual_create_table = request.args.get('manaual_create_table') == "true"
     form = DateTimeForm(data={'execution_date': dttm})
     dag = dagbag.get_dag(dag_id)
     task = dag.get_task(task_id)
-    code = operator.parse_task_code(task, 2)
+    code = operator.parse_task_code(task, 2, manaual_create_table)
     return object.render(
         'airflow/ti_code.html',
         code=code, dag=dag, title="Test Code", task_id=task_id,
