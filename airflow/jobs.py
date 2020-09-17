@@ -306,6 +306,7 @@ class DagFileProcessor(AbstractDagFileProcessor):
         :return: the process that was launched
         :rtype: multiprocessing.Process
         """
+        import setproctitle
         def helper():
             # This helper runs in the newly created process
 
@@ -313,7 +314,7 @@ class DagFileProcessor(AbstractDagFileProcessor):
             # the main log becomes too hard to read. No buffering to enable
             # responsive file tailing
             parent_dir, _ = os.path.split(log_file)
-
+            setproctitle.setproctitle('airflow scheduler %s' % file_path)
             # Create the parent directory for the log file if necessary.
             if not os.path.isdir(parent_dir):
                 os.makedirs(parent_dir)
