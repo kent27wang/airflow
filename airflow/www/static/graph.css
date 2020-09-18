@@ -25,6 +25,9 @@ g.node rect {
 g.node text {
     cursor: pointer;
 }
+g.node.testrunning rect {
+    stroke: MediumPurple;
+}
 g.node.success rect {
     stroke: green;
 }
