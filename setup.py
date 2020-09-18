@@ -198,7 +198,7 @@ def do_setup():
     check_previous()
     write_version()
     setup(
-        name='apache-airflow',
+        name='airflow',
         description='Programmatically author, schedule and monitor data pipelines',
         license='Apache License 2.0',
         version=version,
